@@ -7,9 +7,10 @@ from scipy import ndimage
 #Global Variables
 
 #Parameters to Process blob
-process_conv_size = (4,4)
-num_dilation = 20
-num_erosion = 15
+class Param:
+  process_conv_size = (4,4)
+  num_dilation = 20
+  num_erosion = 15
 
 def get_filter_scores2(amax, model, im, activs,caches,layer,  class_no, percentile_thresh=80):
     filter_scores = []
@@ -231,12 +232,12 @@ def process_blob(cim):
         cim = ndimage.binary_erosion(cim>0)
         cim=ndimage.binary_dilation(cim>0)
 
-    filterk = np.ones(process_conv_size);
+    filterk = np.ones(Param.process_conv_size);
     cim = ndimage.convolve(cim, filterk, mode='constant', cval=0.0)
 
-    for i in range(num_dilation):
+    for i in range(Param.num_dilation):
         cim = ndimage.binary_dilation(cim>0)
-    for i in range(num_erosion):
+    for i in range(Param.num_erosion):
         cim = ndimage.binary_erosion(cim>0)
     return cim
 
