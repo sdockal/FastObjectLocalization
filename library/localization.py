@@ -121,7 +121,6 @@ def eval_precision(c1,c2):
     if (xmin2>=xmin1):
         x_overlap = calculate_overlap(xmin1,xmax1,xmin2,xmax2)
     else:
-        print "inside"
         x_overlap = calculate_overlap(xmin2,xmax2,xmin1,xmax1)
     
     print ymin1,ymax1
