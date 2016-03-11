@@ -116,21 +116,16 @@ def eval_precision(c1,c2):
     xmin2, xmax2, ymin2, ymax2 = c2
    
     #Order by X
-    print xmin1,xmax1
-    print xmin2,xmax2
     if (xmin2>=xmin1):
         x_overlap = calculate_overlap(xmin1,xmax1,xmin2,xmax2)
     else:
         x_overlap = calculate_overlap(xmin2,xmax2,xmin1,xmax1)
-    
-    print ymin1,ymax1
-    print ymin2,ymax2
+
     if (ymin2>=ymin1):
         y_overlap = calculate_overlap(ymin1,ymax1,ymin2,ymax2)
     else:
         y_overlap = calculate_overlap(ymin2,ymax2,ymin1,ymax1)
-    
-    print x_overlap, y_overlap
+   
     intersection = x_overlap*y_overlap
     union = calculate_area(c1) + calculate_area(c2) - intersection
     
