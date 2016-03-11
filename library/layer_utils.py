@@ -1,5 +1,5 @@
-from cs231n.layers import *
-from cs231n.fast_layers import *
+from library.layers import *
+from library.fast_layers import *
 
 
 def affine_relu_forward(x, w, b):

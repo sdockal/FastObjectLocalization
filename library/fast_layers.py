@@ -7,7 +7,7 @@ except ImportError:
   print 'python setup.py build_ext --inplace'
   print 'You may also need to restart your iPython kernel'
 
-from cs231n.im2col import *
+from library.im2col import *
 
 
 def conv_forward_im2col(x, w, b, conv_param):
