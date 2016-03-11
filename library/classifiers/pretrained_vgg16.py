@@ -229,17 +229,10 @@ class PretrainedVGG(object):
         w, b = self.params['W%d' % i1], self.params['b%d' % i1]
         prev_a = prev_a.reshape((-1,w.shape[0]))
         next_a, cache = affine_relu_forward(prev_a, w, b)
-        #print "Layer ", i1
-        #print next_a.shape, "affine"
-        #print np.mean(next_a), np.argmax(next_a)
-        #print next_a[0,0:10]
       elif i == len(self.conv_params) + 2:
         # This is the last fully-connectsed layer that produces scores
         w, b = self.params['W%d' % i1], self.params['b%d' % i1]
         next_a, cache = affine_forward(prev_a, w, b)
-        #print "layer", i1
-        #print next_a.shape, "last_affine"
-        #print np.mean(next_a), np.argmax(next_a)
       else:
         raise ValueError('Invalid layer index %d' % i)
 
@@ -281,7 +274,6 @@ class PretrainedVGG(object):
       i1 = i + 1
       if i == len(self.conv_params) + 2:
         # This is the last fully-connected layer
-        print i
         dprev_a, dw, db = affine_backward(dnext_a, layer_caches[j])
         grads['W%d' % i1] = dw
         grads['b%d' % i1] = db

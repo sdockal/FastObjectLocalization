@@ -4,6 +4,13 @@ import matplotlib.pyplot as plt
 from scipy.misc import imread, imresize
 from scipy import ndimage
 
+#Global Variables
+
+#Parameters to Process blob
+process_conv_size = (4,4)
+num_dilation = 20
+num_erosion = 15
+
 def get_filter_scores2(amax, model, im, activs,caches,layer,  class_no, percentile_thresh=80):
     filter_scores = []
     for zero,i,x,y in amax:
@@ -16,11 +23,9 @@ def get_filter_scores2(amax, model, im, activs,caches,layer,  class_no, percenti
         filter_scores += [[i,n_score,xmin,xmax,ymin,ymax]]
     return filter_scores
 
-def get_filter_scores(amax, model, im, activs,caches,layer,  class_no, percentile_thresh=80,use_blob = False):
+def get_filter_scores(amax, model, im, activs,caches,layer,  class_no, percentile_thresh=80,use_blob = False, verbose=False):
   filter_scores = []
   for zero,i,x,y in amax:
-      print i,(x,y)
-      #if np.sum(activs[layer][0,i]>0)
       back_grad = deconv(model,activs,caches,layer,(0,i,x,y))
       if use_blob:
           blob = find_blob(back_grad,percentile_thresh=80)
@@ -31,18 +36,18 @@ def get_filter_scores(amax, model, im, activs,caches,layer,  class_no, percentil
       if np.sum(blob) == 0:
           continue
       n_score = get_score(im,class_no,model, mask = blob)
-      print "score =" ,n_score
+      if (verbose):
+            print "score =" ,n_score
       if use_blob:
         filter_scores += [[i,n_score,blob,0,0,0,0]]
       else:
         filter_scores += [[i,n_score,blob,xmin,xmax,ymin,ymax]]
   return filter_scores
 
-def get_fast_filter_scores(amax, model, im, activs,caches,layer,  class_no, percentile_thresh=80,use_blob = False):
+def get_fast_filter_scores(amax, model, im, activs,caches,layer,  class_no, percentile_thresh=80,use_blob = False, verbose=False):
   filter_scores = []
   k=0
   for zero,i,x,y in amax:
-      print i,(x,y)
       #if np.sum(activs[layer][0,i]>0)
       back_grad = deconv(model,activs,caches,layer,(0,i,x,y))
       if use_blob:
@@ -54,7 +59,8 @@ def get_fast_filter_scores(amax, model, im, activs,caches,layer,  class_no, perc
       if np.sum(blob) == 0:
           continue
       n_score = -k
-      print "score =" ,n_score
+      if verbose:
+          print "score =" ,n_score
       if use_blob:
         filter_scores += [[i,n_score,blob,0,0,0,0]]
       else:
@@ -80,7 +86,6 @@ def deconv(model,activs,caches,layer,neuron):
 
 #Define Function for deconv
 def deconv_2(model,activs, caches,layer,neuron,slayer):
-    #print neuron[1]
     back_grad = np.zeros(activs[slayer].shape)
     print back_grad.shape
     if(len(neuron)==3):
@@ -117,16 +122,19 @@ def get_blob():
     
 #Image Utilities
 def load_image(imgf):
-    im = cv2.resize(imread(imgf), (224, 224)).astype(np.float32)
-    im[:,:,0] -= 103.939
-    im[:,:,1] -= 116.779
-    im[:,:,2] -= 123.68
-    im = im.transpose((2,0,1))
-    im = np.expand_dims(im, axis=0)
-    return im
+    im = imread(imgf)
+    im = resize_image(im)
+    return process_image(im)
 
 def load_image_cv2(imgf):
-    im = cv2.resize(cv2.imread(imgf), (224, 224)).astype(np.float32)
+    im = cv2.imread(imgf)
+    im = resize_image(im)
+    return process_image(im)
+
+def resize_image(im):
+    return cv2.resize(im, (224, 224)).astype(np.float32)
+
+def process_image(im):
     im[:,:,0] -= 103.939
     im[:,:,1] -= 116.779
     im[:,:,2] -= 123.68
@@ -175,26 +183,14 @@ def find_box(back_grad, percentile_thresh = 40):
     ymin,ymax = min(idxs),max(idxs)
     return xmin,xmax,ymin,ymax
 
-def get_score2(im,class_no, model, xmin,xmax,ymin,ymax):
-    print xmin,xmax,ymin,ymax
-    mask = np.zeros(im.shape)
-    mask[0,:,xmin:(xmax+1),ymin:(ymax+1)] = 1
-    newim = im.copy()*mask
-    scores,_ = model.forward(newim)
-    return scores[0,class_no]
-
+#Get Score for a given image and class number. If mask != 0, it uses the mask area, else defaults to the area specified by the rectangle specified by (xmin,ymin) (xmax,ymax)
 def get_score(im,class_no, model, xmin=0,xmax=0,ymin=0,ymax=0,mask=0):
-    print xmin,xmax,ymin,ymax
+    #print xmin,xmax,ymin,ymax
     if np.sum(mask )== 0:
         mask = np.zeros(im.shape)
         mask[0,:,xmin:(xmax+1),ymin:(ymax+1)] = 1
     newim = im.copy()*mask
-    #plt.imshow(newim[0].transpose(1,2,0))
     scores,_ = model.forward(newim)
-    #probs = np.exp(scores - np.max(scores, axis=1, keepdims=True))
-    #probs /= np.sum(probs, axis=1, keepdims=True)
-    #print np.argmax(probs)
-    #print CLASSES[np.argmax(probs)]
     return scores[0,class_no]
 
 #Given Activations, Deconv, Layer Number
@@ -235,12 +231,12 @@ def process_blob(cim):
         cim = ndimage.binary_erosion(cim>0)
         cim=ndimage.binary_dilation(cim>0)
 
-    filterk = np.ones((4,4));
+    filterk = np.ones(process_conv_size);
     cim = ndimage.convolve(cim, filterk, mode='constant', cval=0.0)
 
-    for i in range(20):
+    for i in range(num_dilation):
         cim = ndimage.binary_dilation(cim>0)
-    for i in range(15):
+    for i in range(num_erosion):
         cim = ndimage.binary_erosion(cim>0)
     return cim
 
