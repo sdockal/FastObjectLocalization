@@ -49,7 +49,7 @@ def get_localization_mask(im, model, layer, n_neurons, kmax, class_no=0 ):
     #Union Blobs
     sorted_scores = sorted(filter_scores,key=lambda x:-x[1])
     mask = np.zeros(im.shape)
-    for k in range(3):
+    for k in range(n_neurons):
         i,n_score,blob,xmin,xmax,ymin,ymax=sorted_scores[k]
         mask = (mask+blob)>0
         
@@ -96,6 +96,41 @@ def visualize(im, bbox_cords):
     new_im = new_im.astype(np.uint8)
     new_im = cv2.cvtColor(new_im, cv2.cv.CV_BGR2RGB)
     plt.imshow(new_im)
+    
+def calculate_area(c):
+    xmin,xmax,ymin,ymax = c
+    return ((xmax-xmin)*(ymax-ymin))
+
+def calculate_overlap(xL1, xL2, xH1, xH2):
+    if(xH1>=xL2):
+        if(xH2>=xH1):
+            return (xH1-xL2)
+        else:
+            #Box 2 axis lies inside 1
+            return (xH2-xL2)
+    else:
+        return 0
+    
+def eval_precision(c1,c2):
+    xmin1, xmax1, ymin1, ymax1 = c1
+    xmin2, xmax2, ymin2, ymax2 = c2
+   
+    #Order by X
+    if (xmin2>=xmin1):
+        x_overlap = calc_overlap(xmin1,xmax1,xmin2,xmax2)
+    else:
+        x_overlap = calc_overlap(xmin2,xmax2,xmin1,ymax1)
+        
+    if (ymin2>=ymin1):
+        y_overlap = calc_overlap(ymin1,ymax1,ymin2,ymax2)
+    else:
+        y_overlap = calc_overlap(ymin2,ymax2,ymin1,ymax1)
+        
+    intersection = x_overlap*y_overlap
+    union = calculate_area(c1) + calculate_area(c2) - intersection
+    
+    return union/intersection
+    
     
 def main():
     #Sample Code for an image
