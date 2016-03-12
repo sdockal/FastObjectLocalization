@@ -76,6 +76,10 @@ for index in range(start_index,len(candidates)):
         #Debug Print
         print get_time_stamp() + " [%d]: Skip (%d,%d): %s : URL is Empty(White) Image"%(index, class_idx,xmlidx,url)
         log_txt.write(get_time_stamp()  + " [%d]: Skip (%d,%d): %s : URL is Empty(White) Image\n"%(index, class_idx,xmlidx,url))
+    elif np.mean(im)<=2:
+        #Debug Print
+        print get_time_stamp() + " [%d]: Skip (%d,%d): %s : URL is Empty(Black) Image"%(index, class_idx,xmlidx,url)
+        log_txt.write(get_time_stamp()  + " [%d]: Skip (%d,%d): %s : URL is Empty(Black) Image\n"%(index, class_idx,xmlidx,url))
     else:  
         bbox_coords = bbox(im,model,class_no=class_idx,n_neurons = 5,kmax=10)
         xmin_out, xmax_out, ymin_out, ymax_out = bbox_coords
