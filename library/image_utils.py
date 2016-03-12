@@ -24,3 +24,5 @@ def image_from_url(url):
     print 'Value Error: ', url
   except SocketError as e:
     print 'Socket Error: ', url
+  except httplib.BadStatusLine as e:
+    print 'Bad StatusLine Error: ', url
