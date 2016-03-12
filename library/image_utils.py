@@ -1,6 +1,7 @@
 import urllib2, os, tempfile
 import sys
 import cv2
+from socket import error as SocketError
 
 def image_from_url(url):
   """
@@ -21,3 +22,5 @@ def image_from_url(url):
     print 'HTTP Error: ', e.code, url
   except ValueError as e:
     print 'Value Error: ', url
+  except SocketError as e:
+    print 'Socket Error: ', url
