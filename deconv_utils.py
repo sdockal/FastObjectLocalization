@@ -28,6 +28,8 @@ def get_filter_scores(amax, model, im, activs,caches,layer,  class_no, percentil
   filter_scores = []
   for zero,i,x,y in amax:
       back_grad = deconv(model,activs,caches,layer,(0,i,x,y))
+      plt.figure()
+      plt.imshow(back_grad[0].transpose(1,2,0))
       if use_blob:
           blob = find_blob(back_grad,percentile_thresh=80)
       else:
@@ -154,11 +156,13 @@ def deprocess_image(img):
 #Takes  input 
 def plot_image(im):
     im = deprocess_image(im)
+    plt.figure()
     plt.imshow(im)
 
 def plot_image_cv2(im):
     im = deprocess_image(im)
     im = cv2.cvtColor(im, cv2.cv.CV_BGR2RGB)
+    plt.figure()
     plt.imshow(im)
     #cv.imshow("Image",im)
     

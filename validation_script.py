@@ -77,6 +77,7 @@ try:
     print_and_log("Loaded Input Data Set",log_txt)
 
     #Read Input File and start at the index higher than that of last line
+
     for index in range(start_index,len(candidates)):
         log_txt.flush()
         ret = candidates[index]
@@ -89,10 +90,6 @@ try:
         elif np.mean(im)>=253:
             #Debug Print
             msg = "[%d]: Skip (%d,%d): %s : URL is Empty(White) Image"%(index, class_idx,xmlidx,url)
-            print_and_log(msg,log_txt)
-        elif np.mean(im)<=2:
-            #Debug Print
-            msg = "[%d]: Skip (%d,%d): %s : URL is Empty(Black) Image"%(index, class_idx,xmlidx,url)
             print_and_log(msg,log_txt)
         else:  
             bbox_coords = bbox(im,model,class_no=class_idx,n_neurons = n_neurons_input,kmax=kmax_input)
@@ -109,8 +106,7 @@ try:
             msg = "[%d]: %d,%d,%f"%(index, class_idx,xmlidx,precision)
             print_and_log(msg,log_txt)
 except IOError as e:
-    print_and_log("File Reading Issue - Hopefully close and flushed\n")
+    print 'IO Error: ', e.code
 finally:
     close(results_csv)
     close(log_txt)
-
